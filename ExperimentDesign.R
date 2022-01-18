@@ -35,5 +35,12 @@ pf.design <- pf.design[sample(1:nrow(pf.design)),]
 
 #extra formatting
 #Add trial index
+pf.index <- c(1:nrow(pf.design))
+pf.design <- pf.design %>%
+  mutate("Index" = pf.index) %>%
+  select(-Rep..)
 #rename columns to reflect factors
-
+pf.factors <- c("startposition",
+                "obstaclespresent",
+                "populationsize","index")
+colnames(pf.design) <- pf.factors
