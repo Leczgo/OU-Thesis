@@ -18,6 +18,23 @@ pf.design <- optFederov(data = f.design,
 #extract a dataframe of the design
 pf.design <- pf.design$design
 
+#extra formatting
+#rename columns to reflect factors
+pf.factors <- c("startposition",
+                "obstaclespresent",
+                "populationsize")
+pf.design <- pf.design %>% select(-Rep..)
+colnames(pf.design) <- pf.factors
+#Add extra columns to describe factors
+pf.design <- pf.design %>%
+  mutate("Scenario" = c("S1","S2","S3","S4"),
+         "Starting Position" = 
+           ifelse(startposition < 0,"Unconcentrated","Concentrated"),
+         "Obstacles" = 
+           ifelse(obstaclespresent < 0, "Not-Present","Present"),
+         "Population Size" = 
+           ifelse(populationsize < 0, "Low", "High"))
+  
 #create data frame for the design including replications
 #define the number of replications
 n.reps <- 10
@@ -32,15 +49,17 @@ while (i.reps < n.reps) {
 }
 #randomize the trials
 pf.design <- pf.design[sample(1:nrow(pf.design)),]
-
-#extra formatting
 #Add trial index
 pf.index <- c(1:nrow(pf.design))
-pf.design <- pf.design %>%
-  mutate("Index" = pf.index) %>%
-  select(-Rep..)
-#rename columns to reflect factors
-pf.factors <- c("startposition",
-                "obstaclespresent",
-                "populationsize","index")
-colnames(pf.design) <- pf.factors
+pf.design <- pf.design %>% mutate("Trial Index" = pf.index)
+
+#one-time print of design-matrix to .csv file
+#write.csv(pf.design, file = "thesis_design.csv")
+
+#one-time quality check of simulation results
+#four simulation runs were sampled for errors
+#(e.g. incorrect population size, improper distribution, etc.)
+#sample taken after 35 simulation runs had been conducted
+smpl <- sample(c(1:35),4)
+#results are [4,22,14,1], therefore those 4 trials will be checked
+smpl <- c(4,22,14,1)
