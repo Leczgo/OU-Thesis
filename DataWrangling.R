@@ -128,3 +128,4 @@ rm(doors,rooms,temp_names,temp_occ,temp_remaining,tri_occ,scen_occ,doors_path,
    temp_exit5,rooms_select,rooms_path)
 
 #one-time print of data .csv files
+setwd(expwd)
