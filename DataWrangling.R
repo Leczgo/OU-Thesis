@@ -39,9 +39,11 @@ for (imp_val_occ in 1:nrow(dsgmatrix)){#begins loop to read all occupant data
                 estimateParmsLognormFromSample(distance..m.)[[2]],
               "Avg Distance arithmetic" = mean(distance..m.),
               "sd Distance arithmetic" = sd(distance..m.)) %>%
-    mutate("Trial" = tri_occ)#add trial number
+    mutate("Trial.Index" = tri_occ)#add trial number
   occupants <- bind_rows(temp_occ,occupants)#bind new data with previous data
 }
+datamatrix <- #join occupant data with design matrix into singld df
+  left_join(x = dsgmatrix,y = occupants,by = "Trial.Index")
 
 #import room data
 #import initial trial
@@ -121,11 +123,26 @@ for (imp_val_doors in 2:nrow(dsgmatrix)) {#bins loop toimport rest of data
   exit5 <- full_join(exit5,temp_exit5,by = temp_names[1])#joins exit5 data
 }
 
+#define function to summarize exit data & join to occupants matrix
+# sum_exit_data <- function (df1,df2,headername) {
+#   temp_df <- df1[,-1]
+#   for (num_exit in 2:nrow(temp_df)) {
+#     temp_df[num_exit,] <- temp_df[txt,] + temp_df[num_exit - 1,]
+#   }
+#   temp_df <- gather(temp_df,key = "Trial",value = headername)
+#   temp_df <- mutate(temp_df,"Trial.Index" = as.integer(str_sub(temp_df[,"Trial"],
+#                    start = str_locate(
+#                      temp_df[,"Trial"],pattern = " ") + 1,
+#                    end = str_length(temp_df[,"Trial"]))))
+#   df2 <- left_join(x = df2,y = temp_df,by = "Trial.Index")
+# }
+# sum_exit_data(exit1,datamatrix,"Exit 1")
+
 #clean up variables
 rm(doors,rooms,temp_names,temp_occ,temp_remaining,tri_occ,scen_occ,doors_path,
    doors_select,exited_select,imp_val_rooms,imp_val_doors,imp_val_occ,
    occ_path,remaining_select,temp_exit1,temp_exit2,temp_exit3,temp_exit4,
-   temp_exit5,rooms_select,rooms_path)
+   temp_exit5,rooms_select,rooms_path,temp_exits)
 
 #one-time print of data .csv files
 setwd(expwd)
