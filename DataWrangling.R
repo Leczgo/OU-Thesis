@@ -6,6 +6,7 @@ library(tidyr)
 library(ggplot2)
 library(stringr)
 library(lognorm)
+library(glue)
 #define directory for analysis files
 expwd <- "C:/Users/Adam/Desktop/SimThesis/OU-Thesis"
 #set directory for simulation data
@@ -149,7 +150,7 @@ for (cum_exit in (2:nrow(exit5_cum))) {#cumulative sum of all rows for exit2
 #define function to summarize exit data & join to occupants matrix
 sum_exit_data <- function (df1,headername) {
   temp_df <- gather(df1[,-1],key = Trial,value = temp) %>%
-    group_by(Trial) %>% summarize(headername = sum(temp)) %>%
+    group_by(Trial) %>% summarize("{headername}" := sum(temp)) %>%
     mutate(Trial.Index = as.integer(
       str_sub(Trial,
       start = 7,
