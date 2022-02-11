@@ -122,27 +122,61 @@ for (imp_val_doors in 2:nrow(dsgmatrix)) {#bins loop toimport rest of data
   exit4 <- full_join(exit4,temp_exit4,by = temp_names[1])#joins exit4 data
   exit5 <- full_join(exit5,temp_exit5,by = temp_names[1])#joins exit5 data
 }
+exit1[is.na(exit1)] <- 0 #replace NA with zero values
+exit2[is.na(exit2)] <- 0 #replace NA with zero values
+exit3[is.na(exit3)] <- 0 #replace NA with zero values
+exit4[is.na(exit4)] <- 0 #replace NA with zero values
+exit5[is.na(exit5)] <- 0 #replace NA with zero values
+
+#summarize exit data
+exit1_cum <- arrange(exit1,exit1[,1])#create a new df for cumulative count
+exit2_cum <- arrange(exit2,exit2[,1])#create a new df for cumulative count
+exit3_cum <- arrange(exit3,exit3[,1])#create a new df for cumulative count
+exit4_cum <- arrange(exit4,exit4[,1])#create a new df for cumulative count
+exit5_cum <- arrange(exit5,exit5[,1])#create a new df for cumulative count
+
+for (cum_exit in (2:nrow(exit1_cum))) {#cumulative sum of all rows for exit1
+  exit1_cum[cum_exit,-1] <- exit1_cum[cum_exit,-1] + exit1_cum[cum_exit - 1,-1]}
+for (cum_exit in (2:nrow(exit2_cum))) {#cumulative sum of all rows for exit2
+  exit2_cum[cum_exit,-1] <- exit2_cum[cum_exit,-1] + exit2_cum[cum_exit - 1,-1]}
+for (cum_exit in (2:nrow(exit3_cum))) {#cumulative sum of all rows for exit3
+  exit3_cum[cum_exit,-1] <- exit3_cum[cum_exit,-1] + exit3_cum[cum_exit - 1,-1]}
+for (cum_exit in (2:nrow(exit4_cum))) {#cumulative sum of all rows for exit2
+  exit4_cum[cum_exit,-1] <- exit2_cum[cum_exit,-1] + exit2_cum[cum_exit - 1,-1]}
+for (cum_exit in (2:nrow(exit5_cum))) {#cumulative sum of all rows for exit2
+  exit5_cum[cum_exit,-1] <- exit5_cum[cum_exit,-1] + exit5_cum[cum_exit - 1,-1]}
 
 #define function to summarize exit data & join to occupants matrix
-# sum_exit_data <- function (df1,df2,headername) {
-#   temp_df <- df1[,-1]
-#   for (num_exit in 2:nrow(temp_df)) {
-#     temp_df[num_exit,] <- temp_df[txt,] + temp_df[num_exit - 1,]
-#   }
-#   temp_df <- gather(temp_df,key = "Trial",value = headername)
-#   temp_df <- mutate(temp_df,"Trial.Index" = as.integer(str_sub(temp_df[,"Trial"],
-#                    start = str_locate(
-#                      temp_df[,"Trial"],pattern = " ") + 1,
-#                    end = str_length(temp_df[,"Trial"]))))
-#   df2 <- left_join(x = df2,y = temp_df,by = "Trial.Index")
-# }
+sum_exit_data <- function (df1,headername) {
+  temp_df <- gather(df1[,-1],key = Trial,value = temp) %>%
+    group_by(Trial) %>% summarize(headername = sum(temp)) %>%
+    mutate(Trial.Index = as.integer(
+      str_sub(Trial,
+      start = 7,
+      end = str_length(Trial))))
+#df2 <- left_join(x = df2,y = temp_df,by = "Trial.Index")
+  return(temp_df)
+}
 # sum_exit_data(exit1,datamatrix,"Exit 1")
 
 #clean up variables
 rm(doors,rooms,temp_names,temp_occ,temp_remaining,tri_occ,scen_occ,doors_path,
    doors_select,exited_select,imp_val_rooms,imp_val_doors,imp_val_occ,
    occ_path,remaining_select,temp_exit1,temp_exit2,temp_exit3,temp_exit4,
-   temp_exit5,rooms_select,rooms_path,temp_exits)
+   temp_exit5,rooms_select,rooms_path,temp_exits,cum_exit)
 
 #one-time print of data .csv files
 setwd(expwd)
+#write.csv(occupants,"occupants.csv")
+#write.csv(exit1,"exit1.csv")
+#write.csv(exit2,"exit2.csv")
+#write.csv(exit3,"exit3.csv")
+#write.csv(exit4,"exit4.csv")
+#write.csv(exit5,"exit5.csv")
+#write(exited,"exited.csv")
+#write(remaining,"remaining.csv")
+#write.csv(exit1_cum,"exit1_cum.csv")
+#write.csv(exit2_cum,"exit2_cum.csv")
+#write.csv(exit3_cum,"exit3_cum.csv")
+#write.csv(exit4_cum,"exit4_cum.csv")
+#write.csv(exit5_cum,"exit5_cum.csv")
