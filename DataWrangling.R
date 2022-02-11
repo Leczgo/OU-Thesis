@@ -147,18 +147,16 @@ for (cum_exit in (2:nrow(exit5_cum))) {#cumulative sum of all rows for exit2
   exit5_cum[cum_exit,-1] <- exit5_cum[cum_exit,-1] + exit5_cum[cum_exit - 1,-1]}
 
 #define function to summarize exit data & join to occupants matrix
-# sum_exit_data <- function (df1,df2,headername) {
-#   temp_df <- df1[,-1]
-#   for (num_exit in 2:nrow(temp_df)) {
-#     temp_df[num_exit,] <- temp_df[txt,] + temp_df[num_exit - 1,]
-#   }
-#   temp_df <- gather(temp_df,key = "Trial",value = headername)
-#   temp_df <- mutate(temp_df,"Trial.Index" = as.integer(str_sub(temp_df[,"Trial"],
-#                    start = str_locate(
-#                      temp_df[,"Trial"],pattern = " ") + 1,
-#                    end = str_length(temp_df[,"Trial"]))))
-#   df2 <- left_join(x = df2,y = temp_df,by = "Trial.Index")
-# }
+sum_exit_data <- function (df1,headername) {
+  temp_df <- gather(df1[,-1],key = Trial,value = temp) %>%
+    group_by(Trial) %>% summarize(headername = sum(temp)) %>%
+    mutate(Trial.Index = as.integer(
+      str_sub(Trial,
+      start = 7,
+      end = str_length(Trial))))
+#df2 <- left_join(x = df2,y = temp_df,by = "Trial.Index")
+  return(temp_df)
+}
 # sum_exit_data(exit1,datamatrix,"Exit 1")
 
 #clean up variables
