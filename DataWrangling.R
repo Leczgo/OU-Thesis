@@ -13,7 +13,8 @@ expwd <- "C:/Users/Adam/Desktop/SimThesis/OU-Thesis"
 datawd <- "C:/Users/Adam/Desktop/SimThesis/Pathfinder-Simulation"
 setwd(expwd) #sets working directory to analysis folder
 dsgmatrix <- read.csv("thesis_design.csv",stringsAsFactors = FALSE) %>% 
-  select(-X.1) #import design matrix
+  select(-X.1) %>%#import design matrix
+  mutate(Trial = paste("Trial",Trial.Index,sep = " "))#add readable trial col
 
 setwd(datawd) #sets working directory to data folder
 #import occupant data from sims
@@ -43,7 +44,7 @@ for (imp_val_occ in 1:nrow(dsgmatrix)){#begins loop to read all occupant data
     mutate("Trial.Index" = tri_occ)#add trial number
   occupants <- bind_rows(temp_occ,occupants)#bind new data with previous data
 }
-datamatrix <- #join occupant data with design matrix into singld df
+datamatrix <- #join occupant data with design matrix into single df
   left_join(x = dsgmatrix,y = occupants,by = "Trial.Index")
 
 #import room data
@@ -80,7 +81,18 @@ for (imp_val_rooms in 2:nrow(dsgmatrix)) {#begins loop to read room data
   remaining <- #joins data together
     full_join(remaining,temp_remaining,by = temp_names[1])
 }
-
+exited <- arrange(exited,exited[,1])#sort exited df by time column
+remaining <- arrange(remaining,remaining[,1])#sort remaining df by time column
+for (rowval in 2:nrow(remaining)) {#remove NA values from 'remaining' df
+  for (colval in 1:ncol(remaining)) {
+    if (is.na(remaining[rowval,colval])) {
+      remaining[rowval,colval] <- remaining[rowval - 1,colval]
+    }}}
+for (rowval in 2:nrow(exited)) {#remove NA values from 'exited' df
+  for (colval in 1:ncol(exited)) {
+    if (is.na(exited[rowval,colval])) {
+      exited[rowval,colval] <- exited[rowval - 1, colval]
+    }}}
 #import exit data
 #create initial data frame
 doors_select <- #define selections
@@ -129,6 +141,12 @@ exit3[is.na(exit3)] <- 0 #replace NA with zero values
 exit4[is.na(exit4)] <- 0 #replace NA with zero values
 exit5[is.na(exit5)] <- 0 #replace NA with zero values
 
+exit1 <- arrange(exit1,exit1[,1])#sort exit1 df by time
+exit2 <- arrange(exit2,exit2[,1])#sort exit2 df by time
+exit3 <- arrange(exit3,exit3[,1])#sort exit3 df by time
+exit4 <- arrange(exit4,exit4[,1])#sort exit4 df by time
+exit5 <- arrange(exit5,exit5[,1])#sort exit5 df by time
+
 #summarize exit data
 exit1_cum <- arrange(exit1,exit1[,1])#create a new df for cumulative count
 exit2_cum <- arrange(exit2,exit2[,1])#create a new df for cumulative count
@@ -148,23 +166,31 @@ for (cum_exit in (2:nrow(exit5_cum))) {#cumulative sum of all rows for exit2
   exit5_cum[cum_exit,-1] <- exit5_cum[cum_exit,-1] + exit5_cum[cum_exit - 1,-1]}
 
 #define function to summarize exit data & join to occupants matrix
-sum_exit_data <- function (df1,headername) {
-  temp_df <- gather(df1[,-1],key = Trial,value = temp) %>%
-    group_by(Trial) %>% summarize("{headername}" := sum(temp)) %>%
-    mutate(Trial.Index = as.integer(
+sum_exit_data <- function (df1,df2,headername) {
+  temp_df <- #create temporary df
+    gather(df1[,-1],key = Trial,value = temp) %>%#unpivot into single column
+    group_by(Trial) %>%#tell formula to aggregate by trial
+    summarize("{headername}" := sum(temp)) %>%#calculate total exited per trial
+    mutate(Trial.Index = as.integer(#separate trial number from string
       str_sub(Trial,
       start = 7,
-      end = str_length(Trial))))
-#df2 <- left_join(x = df2,y = temp_df,by = "Trial.Index")
-  return(temp_df)
+      end = str_length(Trial)))) %>%
+    select(-Trial)
+  datamatrix <<- #join exit data to data matrix df by trial number
+    left_join(x = df2,y = temp_df,by = "Trial.Index")
 }
-# sum_exit_data(exit1,datamatrix,"Exit 1")
-
+sum_exit_data(df1 = exit1, df2 = datamatrix,headername = "Exit1")#execute exit1
+sum_exit_data(df1 = exit2, df2 = datamatrix,headername = "Exit2")#execute exit2
+sum_exit_data(df1 = exit3, df2 = datamatrix,headername = "Exit3")#execute exit3
+sum_exit_data(df1 = exit4, df2 = datamatrix,headername = "Exit4")#execute exit4
+sum_exit_data(df1 = exit5, df2 = datamatrix,headername = "Exit5")#execute exit5
+datamatrix <- mutate(datamatrix, TotalExit = Exit1 + Exit2 + Exit3
+                     + Exit4 + Exit5)
 #clean up variables
 rm(doors,rooms,temp_names,temp_occ,temp_remaining,tri_occ,scen_occ,doors_path,
    doors_select,exited_select,imp_val_rooms,imp_val_doors,imp_val_occ,
    occ_path,remaining_select,temp_exit1,temp_exit2,temp_exit3,temp_exit4,
-   temp_exit5,rooms_select,rooms_path,temp_exits,cum_exit)
+   temp_exit5,rooms_select,rooms_path,temp_exits,cum_exit,rowval,colval)
 
 #one-time print of data .csv files
 setwd(expwd)
@@ -174,10 +200,11 @@ setwd(expwd)
 #write.csv(exit3,"exit3.csv")
 #write.csv(exit4,"exit4.csv")
 #write.csv(exit5,"exit5.csv")
-#write(exited,"exited.csv")
-#write(remaining,"remaining.csv")
+#write.csv(exited,"exited.csv")
+#write.csv(remaining,"remaining.csv")
 #write.csv(exit1_cum,"exit1_cum.csv")
 #write.csv(exit2_cum,"exit2_cum.csv")
 #write.csv(exit3_cum,"exit3_cum.csv")
 #write.csv(exit4_cum,"exit4_cum.csv")
 #write.csv(exit5_cum,"exit5_cum.csv")
+#write.csv(datamatrix,"datamatrix.csv")
