@@ -118,3 +118,13 @@ dist_plot <- #generate plot
   labs(title = "Average Distance Traveled by Evacuating Agents",
        x = "Trial Number",
        y = "Distance (m)",size = "Standard Deviation")
+
+#start ANOVA
+anova_df <- #make analysis df
+  datamatrix %>% select(Starting.Position,Obstacles,Population.Size,Max.TET) %>%
+  mutate(Starting.Position = as.factor(Starting.Position),
+         Obstacles = as.factor(Obstacles),
+         Population.Size = as.factor(Population.Size))
+TET_anova <- 
+  aov(Max.TET ~ Starting.Position * Obstacles * Population.Size,
+      data = anova_df)
