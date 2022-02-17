@@ -126,8 +126,8 @@ anova_df <- #make analysis df
          obstaclespresent = as.factor(obstaclespresent),
          populationsize = as.factor(populationsize))
 TET_anova <- 
-  #aov(Max.TET ~ startposition * obstaclespresent * populationsize,
-      #data = anova_df)
+  aov(Max.TET ~ startposition * obstaclespresent * populationsize,
+      data = anova_df)
   #lm(Max.TET ~ startposition * obstaclespresent * populationsize,
      #data = anova_df)
 summary(TET_anova)
