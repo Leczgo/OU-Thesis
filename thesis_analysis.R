@@ -6,7 +6,6 @@ library(tidyr)
 library(ggplot2)
 library(stringr)
 library(lognorm)
-library(glue)
 library(RColorBrewer)
 #define directory for analysis files
 expwd <- "C:/Users/Adam/Desktop/SimThesis/OU-Thesis"
@@ -121,10 +120,15 @@ dist_plot <- #generate plot
 
 #start ANOVA
 anova_df <- #make analysis df
-  datamatrix %>% select(Starting.Position,Obstacles,Population.Size,Max.TET) %>%
-  mutate(Starting.Position = as.factor(Starting.Position),
-         Obstacles = as.factor(Obstacles),
-         Population.Size = as.factor(Population.Size))
+  datamatrix %>%
+  select(startposition,obstaclespresent,populationsize,Max.TET) %>%
+  mutate(startposition = as.factor(startposition),
+         obstaclespresent = as.factor(obstaclespresent),
+         populationsize = as.factor(populationsize))
 TET_anova <- 
-  aov(Max.TET ~ Starting.Position * Obstacles * Population.Size,
-      data = anova_df)
+  #aov(Max.TET ~ startposition * obstaclespresent * populationsize,
+      #data = anova_df)
+  #lm(Max.TET ~ startposition * obstaclespresent * populationsize,
+     #data = anova_df)
+summary(TET_anova)
+anova(TET_anova)
