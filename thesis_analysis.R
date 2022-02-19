@@ -121,7 +121,7 @@ TET_box <- #plot TET boxplot
   labs(title = "Box Plot of Total Evacuation Time",
        x = "Simulation Scenario",y = "Time (s)")
 #plot Avg Distance
-Avg_dist_plot_data <- #pick data
+dist_plot_data <- #pick data
   select(datamatrix,Trial,Scenario,Trial.Index,
          Avg.Distance.arithmetic,sd.Distance.arithmetic)
 dist_plot <- #generate plot
@@ -144,19 +144,21 @@ dist_box <- #plot TET boxplot
        x = "Simulation Scenario",y = "Distance (m)")
 
 #start ANOVA of TET
+outsub <- "Outlier(s) Removed"
 anova_df <- #make analysis df
   datamatrix %>%
   select(startposition,obstaclespresent,populationsize,Max.TET,
-         Avg.Distance.arithmetic) %>%
+         Avg.Distance.arithmetic,Trial.Index) %>%
   mutate(startposition = as.factor(startposition),
          obstaclespresent = as.factor(obstaclespresent),
-         populationsize = as.factor(populationsize))
+         populationsize = as.factor(populationsize)) %>%
+  filter(Trial.Index != 32) #remove Trial 32, which is an outlier
 TET_anova <- #generate anova model
   aov(Max.TET ~ startposition * obstaclespresent * populationsize,
       data = anova_df)
 TET_residual_data <- #draw out residuals & fitted values
   data.frame(TET_anova$residuals,TET_anova$fitted.values) %>%
-  mutate(Trial.Index = c(1:40)) %>% 
+  mutate(Trial.Index = c(1:31,33:40)) %>% 
   left_join(select(datamatrix,Trial.Index,Scenario),by = "Trial.Index")
 TET_residual_plot <- #generate residual plot
   ggplot(TET_residual_data,
@@ -164,11 +166,15 @@ TET_residual_plot <- #generate residual plot
   geom_point(mapping = aes(colour = Scenario)) +
   labs(title = "Plot of Residuals of TET Values",
        x = "Fitted TET Values (s)",
-       y = "Residuals")
+       y = "Residuals",
+       subtitle = outsub
+       )
 TET_qq_plot_residuals <- ggqqplot(TET_anova$residuals) +
-  labs(title = "Q-Q Plot of TET Residuals")#generate plot to test normality
+  labs(title = "Q-Q Plot of TET Residuals",
+       subtitle = outsub)#generate plot to test normality
 TET_qq_plot_effects <- ggqqplot(TET_anova$effects) +
-  labs(title = "Q-Q Plot of TET Effects")#generate plot to test normality
+  labs(title = "Q-Q Plot of TET Effects",
+       subtitle = outsub)#generate plot to test normality
 TET_population_me_plot <- #generate main effects plot 
   ggplot(anova_df,mapping = aes(x = populationsize,y = Max.TET)) +
     stat_summary(fun = mean,geom = "line",
@@ -176,7 +182,8 @@ TET_population_me_plot <- #generate main effects plot
     stat_summary(fun = mean,geom = "point",
                  aes(color = "red",group = 1),show.legend = FALSE) +
     labs(title = "Main Effects Plot for TET against Population Size",
-         x = "Population Factor Level", y = "Response: TET (s)")
+         x = "Population Factor Level", y = "Response: TET (s)",
+         subtitle = outsub)
 TET_obstacles_me_plot <- #generate main effects plot 
   ggplot(anova_df,mapping = aes(x = obstaclespresent,y = Max.TET)) +
   stat_summary(fun = mean,geom = "line",
@@ -184,7 +191,8 @@ TET_obstacles_me_plot <- #generate main effects plot
   stat_summary(fun = mean,geom = "point",
                aes(color = "red",group = 1),show.legend = FALSE) +
   labs(title = "Main Effects Plot for TET against the Presence of Obstacles",
-       x = "Obstacle Factor Level", y = "Response: TET (s)")
+       x = "Obstacle Factor Level", y = "Response: TET (s)",
+       subtitle = outsub)
 TET_position_me_plot <- #generate main effects plot 
   ggplot(anova_df,mapping = aes(x = startposition,y = Max.TET)) +
   stat_summary(fun = mean,geom = "line",
@@ -193,14 +201,17 @@ TET_position_me_plot <- #generate main effects plot
                aes(color = "red",group = 1),show.legend = FALSE) +
   labs(title = "Main Effects Plot for TET against the Starting Position
        of Agents",
-       x = "Position Factor Level", y = "Response: TET (s)")
+       x = "Position Factor Level", y = "Response: TET (s)",
+       subtitle = outsub)
 
 #start ANOVA for avg distance traveled
+anova_df <- #remove another outlier that exits for avg distance
+  anova_df %>% filter(Trial.Index != 6)
 distance_anova <- aov(Avg.Distance.arithmetic ~ populationsize *
                         obstaclespresent * startposition, data = anova_df)
 distance_residual_data <- #collect residuals from ANOVA output
   data.frame(distance_anova$residuals,distance_anova$fitted.values) %>%
-  mutate(Trial.Index = c(1:40)) %>%
+  mutate(Trial.Index = c(1:5,7:31,33:40)) %>%
   left_join(select(datamatrix,Scenario,Trial.Index),by = "Trial.Index")
 distance_residual_plot <- #generate plot of residuals vs. fitted values
   ggplot(data = distance_residual_data,
@@ -208,13 +219,16 @@ distance_residual_plot <- #generate plot of residuals vs. fitted values
                        y = distance_anova.residuals)) +
     geom_point(mapping = aes(colour = Scenario)) +
     labs(title = "Plot of Residuals of Average Distance Traveled",
-         x = "Fitted Distance Values (m)",y = "Residuals")
+         x = "Fitted Distance Values (m)",y = "Residuals",
+         subtitle = outsub)
 distance_qq_plot_residuals <- #generate qq plot of residuals
   ggqqplot(distance_anova$residuals) +
-    labs(title = "Q-Q Plot of Average Distance Residuals")
+    labs(title = "Q-Q Plot of Average Distance Residuals",
+         subtitle = outsub)
 distance_qq_plot_effects <- #generate qq plot of effects
   ggqqplot(distance_anova$effects) + 
-    labs(title = "Q-Q Plot of Average Distance Effects")
+    labs(title = "Q-Q Plot of Average Distance Effects",
+         subtitle = outsub)
 distance_population_me_plot <- #generate main effects plot 
   ggplot(anova_df,mapping = aes(x = populationsize,
                                 y = Avg.Distance.arithmetic)) +
@@ -224,7 +238,8 @@ distance_population_me_plot <- #generate main effects plot
                aes(color = "red",group = 1),show.legend = FALSE) +
   labs(title = "Main Effects Plot for Average Distance Traveled
        against the Population Size",
-       x = "Population Factor Level", y = "Response: TET (s)")
+       x = "Population Factor Level", y = "Response: TET (s)",
+       subtitle = outsub)
 distance_obstacles_me_plot <- #generate main effects plot 
   ggplot(anova_df,mapping = aes(x = obstaclespresent,
                                 y = Avg.Distance.arithmetic)) +
@@ -234,7 +249,8 @@ distance_obstacles_me_plot <- #generate main effects plot
                aes(color = "red",group = 1),show.legend = FALSE) +
   labs(title = "Main Effects Plot for Average Distance Traveled against the
        Presence of Obstacles",
-       x = "Obstacle Factor Level", y = "Response: TET (s)")
+       x = "Obstacle Factor Level", y = "Response: TET (s)",
+       subtitle = outsub)
 distance_position_me_plot <- #generate main effects plot 
   ggplot(anova_df,mapping = aes(x = startposition,
                                 y = Avg.Distance.arithmetic)) +
@@ -244,4 +260,10 @@ distance_position_me_plot <- #generate main effects plot
                aes(color = "red",group = 1),show.legend = FALSE) +
   labs(title = "Main Effects Plot for Average Distance Traveled against
        the Starting Position of Agents",
-       x = "Position Factor Level", y = "Response: TET (s)")
+       x = "Position Factor Level", y = "Response: TET (s)",
+       subtitle = outsub)
+
+#take a sample of two from each scenario group for analysis within Pathfinder
+#sample(datamatrix[datamatrix$Scenario == "S4","Trial.Index"],2)
+#S1 = 18 and 30,S2 = 29 and 24,S3 = 40 and 2,S4 = 31 and 8
+#Trial 32 will also be included since it is such a large outlier
