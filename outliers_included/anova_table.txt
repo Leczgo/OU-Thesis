@@ -1,0 +1,15 @@
+                 Df Sum Sq Mean Sq F value  Pr(>F)    
+startposition     1   7170    7170   3.294  0.0779 .  
+obstaclespresent  1   5788    5788   2.659  0.1117    
+populationsize    1 277489  277489 127.491 2.2e-13 ***
+Residuals        36  78356    2177                    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+[1] "\n"
+                 Df Sum Sq Mean Sq F value   Pr(>F)    
+populationsize    1  322.0   322.0  38.420 3.78e-07 ***
+obstaclespresent  1  106.2   106.2  12.675  0.00106 ** 
+startposition     1    5.4     5.4   0.641  0.42861    
+Residuals        36  301.7     8.4                     
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1

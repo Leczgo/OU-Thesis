@@ -8,6 +8,7 @@ library(stringr)
 library(lognorm)
 library(RColorBrewer)
 library(ggpubr)
+library(knitr)
 #define directory for analysis files
 expwd <- "C:/Users/Adam/Desktop/SimThesis/OU-Thesis"
 #set directory for simulation data
@@ -107,26 +108,40 @@ TET_plot <- #generate plot
   geom_segment(mapping = aes(y = Max.TET,xend = Trial.Index+1,yend = Max.TET)) +
   geom_point(mapping = aes(y = Avg.TET.arithmetic,size = sd.TET.arithmetic)) +
   labs(title = "Average and Maximum Evacuation Times",
-       x = "Trial Number",y = "Time(s)",size = "Standard Deviation")
-#TET_hist <- #plot TET histogram
-  #ggplot (TET_plot_data,mapping = aes(x = Max.TET)) +
-  #geom_histogram(binwidth = 15) +
-  #geom_density()
-  #scale_x_continuous(limits = c(min(Max.TET)-25,max(Max.TET)+25)) + 
-  #labs(title = "Histogram of Total Evacuation Time",
-       #x = "Time (s)",y = "Proportion")
-
-#plot distance traveled
-dist_plot_data <- #pick data
-  select(datamatrix,Trial,Scenario,Trial.Index,Avg.Distance.arithmetic,
-         sd.Distance.arithmetic)
+       x = "Trial Number",y = "Time (s)",size = "Standard Deviation")
+TET_hist <- #plot TET histogram
+  ggplot (TET_plot_data,mapping = aes(x = Max.TET)) +
+  geom_histogram(binwidth = 10) +
+  facet_wrap(facets = ~Scenario) +
+  labs(title = "Histogram of Total Evacuation Time",
+       x = "Time (s)",y = "Count")
+TET_box <- #plot TET boxplot
+  ggplot(TET_plot_data,mapping = aes(x = Scenario, y = Max.TET)) +
+  geom_boxplot() +
+  labs(title = "Box Plot of Total Evacuation Time",
+       x = "Simulation Scenario",y = "Time (s)")
+#plot Avg Distance
+Avg_dist_plot_data <- #pick data
+  select(datamatrix,Trial,Scenario,Trial.Index,
+         Avg.Distance.arithmetic,sd.Distance.arithmetic)
 dist_plot <- #generate plot
-  ggplot(dist_plot_data,mapping = aes(x = Trial.Index,colour = Scenario)) +
+  ggplot(Avg_dist_plot_data,mapping = aes(x = Trial.Index, colour = Scenario)) +
   geom_point(mapping = aes(y = Avg.Distance.arithmetic,
                            size = sd.Distance.arithmetic)) +
-  labs(title = "Average Distance Traveled by Evacuating Agents",
-       x = "Trial Number",
-       y = "Distance (m)",size = "Standard Deviation")
+  labs(title = "Average and Maximum Travel Distance",
+       x = "Trial Number",y = "Distance (m)",size = "Standard Deviation")
+dist_hist <- #plot TET histogram
+  ggplot (dist_plot_data,mapping = aes(x = Avg.Distance.arithmetic)) +
+  geom_histogram(binwidth = 1) +
+  facet_wrap(facets = ~Scenario) +
+  labs(title = "Histogram of Average Travel Distance",
+       x = "Distance (m)",y = "Count")
+dist_box <- #plot TET boxplot
+  ggplot(dist_plot_data,mapping = aes(x = Scenario,
+                                      y = Avg.Distance.arithmetic)) +
+  geom_boxplot() +
+  labs(title = "Box Plot of Average Travel Distance",
+       x = "Simulation Scenario",y = "Distance (m)")
 
 #start ANOVA of TET
 anova_df <- #make analysis df
@@ -207,7 +222,7 @@ distance_population_me_plot <- #generate main effects plot
                aes(color = "red",group = 1),show.legend = FALSE) +
   stat_summary(fun = mean,geom = "point",
                aes(color = "red",group = 1),show.legend = FALSE) +
-  labs(title = "Main Effects Plot for Average Distacne Traveled
+  labs(title = "Main Effects Plot for Average Distance Traveled
        against the Population Size",
        x = "Population Factor Level", y = "Response: TET (s)")
 distance_obstacles_me_plot <- #generate main effects plot 
@@ -217,7 +232,7 @@ distance_obstacles_me_plot <- #generate main effects plot
                aes(color = "red",group = 1),show.legend = FALSE) +
   stat_summary(fun = mean,geom = "point",
                aes(color = "red",group = 1),show.legend = FALSE) +
-  labs(title = "Main Effects Plot for Average Distance Traveled agains the
+  labs(title = "Main Effects Plot for Average Distance Traveled against the
        Presence of Obstacles",
        x = "Obstacle Factor Level", y = "Response: TET (s)")
 distance_position_me_plot <- #generate main effects plot 
@@ -227,6 +242,6 @@ distance_position_me_plot <- #generate main effects plot
                aes(color = "red",group = 1),show.legend = FALSE) +
   stat_summary(fun = mean,geom = "point",
                aes(color = "red",group = 1),show.legend = FALSE) +
-  labs(title = "Main Effects Plot for Average Distance Traveled agains
+  labs(title = "Main Effects Plot for Average Distance Traveled against
        the Starting Position of Agents",
        x = "Position Factor Level", y = "Response: TET (s)")
