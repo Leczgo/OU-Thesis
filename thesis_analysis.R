@@ -25,6 +25,7 @@ for (readers in 1:length(analysisfiles)) {
 }
 
 #plot occupants that exited building
+vlines <- c(200,475,550) #create x intercepts for vertical lines
 exited_plotdata <- exited %>% select(-X) %>% #final wrangling steps
   gather(key = Trial,value = exited,-Time..s.) %>%
   mutate(Trial = str_replace(Trial,"Trial.","Trial ")) %>%
@@ -38,7 +39,13 @@ exited_plot <- #generate plot
     geom_label(exited_labeled,mapping = aes(label = Trial)) +
     labs(title = "Total Occupants Exited In Evacuation",
          y = "Occupants Exited", x = "Time (s)") +
-    scale_y_continuous(limits = range(exited_plotdata$exited))
+    scale_y_continuous(limits = range(exited_plotdata$exited)) +
+    scale_x_continuous(limits = range(exited_plotdata$Time..s.),
+                       n.breaks = 25) + 
+    geom_vline(xintercept = vlines,
+               color = "orange", size = 4,alpha = 0.3) +
+    annotate(geom = "text",label = str_glue("{vlines} s"),
+             x = vlines, y = 250,angle = 90,vjust = 1)
 
 #plot occupants that remained in building
 remaining_plotdata <- remaining %>% select(-X) %>% #final wrangling steps
@@ -54,7 +61,13 @@ remaining_plot <- #generate plot
     geom_label(data = remaining_labeled,mapping = aes(label = Trial)) +
     labs(title = "Total Occupants Remaining In Evacuation",
          y = "Occupants Remaining", x = "Time (s)") +
-    scale_y_continuous(limits = range(remaining_plotdata$remaining))
+    scale_y_continuous(limits = range(remaining_plotdata$remaining)) +
+    scale_x_continuous(limits = range(exited_plotdata$Time..s.),
+                       n.breaks = 25) + 
+    geom_vline(xintercept = c(200,475,550),
+              color = "orange", size = 4,alpha = 0.3) +
+    annotate(geom = "text",label = str_glue("{vlines} s"),
+            x = vlines, y = 2250,angle = 90,vjust = 1)
 
 #plot exit data by exit
 exit1_cum_plot_data <- exit1_cum %>% select(-X) %>%#df of flattened exit1 data
@@ -267,3 +280,8 @@ distance_position_me_plot <- #generate main effects plot
 #sample(datamatrix[datamatrix$Scenario == "S4","Trial.Index"],2)
 #S1 = 18 and 30,S2 = 29 and 24,S3 = 40 and 2,S4 = 31 and 8
 #Trial 32 will also be included since it is such a large outlier
+#take a sample of times to analyze further using Pathfinder
+#sample(c(100:225),1)#select a time from beginning of sim to analyze [183 s]
+#sample(c(250:450),1)#select a time from midle of sim to analyze [325 s]
+#sample(c(500:550),1)#select a time from end of sim for low population [504 s]
+#sample(c(600:675),1)#select a time from end of sim for high population [637 s]
