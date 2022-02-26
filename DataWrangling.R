@@ -161,7 +161,7 @@ for (cum_exit in (2:nrow(exit2_cum))) {#cumulative sum of all rows for exit2
 for (cum_exit in (2:nrow(exit3_cum))) {#cumulative sum of all rows for exit3
   exit3_cum[cum_exit,-1] <- exit3_cum[cum_exit,-1] + exit3_cum[cum_exit - 1,-1]}
 for (cum_exit in (2:nrow(exit4_cum))) {#cumulative sum of all rows for exit2
-  exit4_cum[cum_exit,-1] <- exit2_cum[cum_exit,-1] + exit2_cum[cum_exit - 1,-1]}
+  exit4_cum[cum_exit,-1] <- exit2_cum[cum_exit,-1] + exit4_cum[cum_exit - 1,-1]}
 for (cum_exit in (2:nrow(exit5_cum))) {#cumulative sum of all rows for exit2
   exit5_cum[cum_exit,-1] <- exit5_cum[cum_exit,-1] + exit5_cum[cum_exit - 1,-1]}
 
