@@ -1,3 +1,4 @@
+#+eval = FALSE
 #Analyze data from simulation output
 
 #Set initial conditions

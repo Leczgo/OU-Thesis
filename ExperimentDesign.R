@@ -1,3 +1,4 @@
+#+eval = FALSE
 #creating a fractional factorial design
 #2^3-1
 
